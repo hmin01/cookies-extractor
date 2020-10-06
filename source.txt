@@ -1,0 +1,1 @@
+["https://www.naver.com", "http://www.ppomppu.co.kr", "https://quasarzone.com", "http://www.danawa.com", "https://www.11st.co.kr/main", "https://www.gmarket.co.kr", "https://www.coupang.com", "https://www.tmon.co.kr"]
