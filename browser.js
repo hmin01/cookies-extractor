@@ -1,4 +1,5 @@
 const url = require('url');
+const psl = require('psl');
 const puppeteer = require('puppeteer');
 
 // Set browser size
@@ -57,7 +58,7 @@ class Browser {
 
     async extractThirdCookies() {
         const cookies = await this.page.cookies();
-        const host = url.parse(this.page.url()).host;
+        const host = psl.get(url.parse(this.page.url()).host);
 
         // Extract first cookies domain
         const domains = [];
@@ -72,8 +73,14 @@ class Browser {
         const thirdCookies = [];
         for (const elem of allCookies) {
             if (!domains.includes(elem.domain)) {
+                let tld = elem.domain;
+                if (elem.domain.replace(/^|S/)) {
+                    tld = psl.get(elem.domain.substring(1));
+                }
+
                 thirdCookies.push({
                     host: host,
+                    tld: tld,
                     domain: elem.domain,
                     name: elem.name,
                     value: elem.value
