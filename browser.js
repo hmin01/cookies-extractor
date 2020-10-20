@@ -9,7 +9,7 @@ const browserSize = {
 }
 // Puppeteer options (browser options)
 const browserOptions = {
-    headless: false,
+    headless: true,
     devtools: true,
     defaultViewport: {
         width: browserSize.width,
@@ -32,20 +32,36 @@ class Browser {
         this.page = await this.browser.newPage();
     }
 
-    async getBrowser() {
+    getBrowser() {
         return this.browser;
     }
 
-    async getPage() {
+    getPage() {
         return this.page;
     }
 
     async movePage(url) {
-        await this.page.goto(url, {waitUntil: 'networkidle2', timeout: 0});
+        const parser = this.parseURL(url);
+        if (parser !== null && parser.hash === null) {
+            const response = await this.page.goto(url, {waitUntil: 'networkidle2', timeout: 0});
+            return response._status;
+        } else {
+            console.error(`this is inform url (URL: ${url})`);
+            return 404;
+        }
     }
 
     async wait(time) {
         await this.page.waitForTimeout(time);
+    }
+
+    parseURL(urlString) {
+        try {
+            return url.parse(urlString);
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
     }
 
     async extractFirstCookies() {
