@@ -10,25 +10,28 @@ const DEPTH = 1;
         let index = 0;
         // Init
         browser.init("https://www.naver.com");
+        // Process
         while(browser.getLinkCount() !== 0) {
             const link = browser.getLinkShift();
             // Break
             if (link.depth > DEPTH) break;
-            // Process
+
+            // Move page
+            console.info(`[step 1.1] move page (URL: ${link.url.href})`);
             const response = await browser.movePage(link.url.href);
             if (response < 400) {
-                await browser.wait(100);
                 depth = await browser.extractLinks(link.depth);
-
-                console.log(`Cnt: ${index++}`);
+                console.info(`Cnt: ${index++}`);
             } else {
-                console.error(`Response code: ${response._status} / URL: ${link.url.href}`);
+                console.error(`Response code: ${response} / URL: ${link.url.href}`);
             }
         }
         // Console
-        console.log("--- FINISH ---");
-        console.log(browser.getLinkCount());
+        console.log("[step 2] Finish get links (count: " + browser.getLinkCount() + ")");
+
         // Finish
+        console.info("[step 4] finish");
+        await neo4jSession.close();
         await browser.close();
         delete browser;
     } catch (err) {

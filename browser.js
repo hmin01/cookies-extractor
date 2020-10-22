@@ -42,13 +42,19 @@ class Browser {
 
     async movePage(url) {
         const parser = this.parseURL(url);
-        if (parser !== null && parser.hash === null) {
-            const response = await this.page.goto(url, {waitUntil: 'networkidle2', timeout: 0});
-            return response._status;
-        } else {
-            console.error(`this is inform url (URL: ${url})`);
-            return 404;
+        try {
+            if (parser !== null && parser.hash === null) {
+                const response = await this.page.goto(url, {waitUntil: 'networkidle0', timeout: 30000});
+                return response._status;
+            } else {
+                console.error(`this is inform url (URL: ${url})`);
+                return 404;
+            }
+        } catch (err) {
+            console.error(`[${err.name}] ${err.message}`);
+            return 500;
         }
+        
     }
 
     async wait(time) {

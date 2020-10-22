@@ -68,7 +68,7 @@ class BrowserCrawler extends Browser {
             return false;
         }
         // Exception .exe
-        if (parser.pathname.indexOf('.exe') > -1) {
+        if ((parser.pathname.indexOf('.exe') > -1) || (parser.pathname.indexOf('.dmg') > -1)) {
             return false;
         }
         // duplicate check
