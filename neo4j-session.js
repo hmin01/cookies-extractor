@@ -115,18 +115,22 @@ module.exports = {
             // Query
             const result = await select(driver, selectQuery, params);
             // Verify existence
-            if (result.result && result.message.records.length === 0) {
-                // Verify existence
-                const selectResult = await this.findTopLevelDomain(params.publisher, false);
-                if (!selectResult.result) {
-                    await this.insertTopLevelDomain(params.publisher, false);
+            if (result.result) {
+                if (result.message.records.length === 0) {
+                    // Verify existence
+                    const selectResult = await this.findTopLevelDomain(params.publisher, false);
+                    if (!selectResult.result) {
+                        await this.insertTopLevelDomain(params.publisher, false);
+                    }
+                    // Create insert query
+                    insertQuery = "Match (tld1 {tld: $publisher}), (tp1 {name: $name, conn: $conn, publisher: $publisher}) CREATE (tld1) - [r3: Publish]->(tp1)";
+                    // Query and return
+                    return await insert(driver, insertQuery, params);
+                } else {
+                    return {result: true};
                 }
-                // Create insert query
-                insertQuery = "Match (tld1 {tld: $publisher}), (tp1 {name: $name, conn: $conn, publisher: $publisher}) CREATE (tld1) - [r3: Publish]->(tp1)";
-                // Query and return
-                return await insert(driver, insertQuery, params);
             } else {
-                return {result: true};
+                return result;
             }
         } catch (err) {
             return {result: false, message: err.message};
@@ -143,10 +147,14 @@ module.exports = {
             };
             // Query and return
             const result = await select(driver, query, params);
-            if (result.message.records.length > 0) {
-                return {result: true, message: result.message.records};
+            if (result.result) {
+                if (result.message.records.length > 0) {
+                    return {result: true, existence: true, message: result.message.records};
+                } else {
+                    return {result: true, existence: false, message: "Not found TLD"};
+                }
             } else {
-                return {result: false, message: "Not found TLD"};
+                return result;
             }
         } catch (err) {
             return {result: false, message: err.message};
@@ -164,10 +172,14 @@ module.exports = {
             };
             // Query and return
             const result = await select(driver, query, params);
-            if (result.message.records.length > 0) {
-                return {result: true, message: result.message.records};
+            if (result.result) {
+                if (result.message.records.length > 0) {
+                    return {result: true, existence: true, message: result.message.records};
+                } else {
+                    return {result: true, existence: false, message: "Not found SLD"};
+                }
             } else {
-                return {result: false, message: "Not found TLD"};
+                return result;
             }
         } catch (err) {
             return {result: false, message: err.message};
@@ -186,10 +198,14 @@ module.exports = {
             };
             // Query and return
             const result = await select(driver, query, params);
-            if (result.message.records.length > 0) {
-                return {result: true, message: result.message.records};
+            if (result.result) {
+                if (result.message.records.length > 0) {
+                    return {result: true, existence: true, message: result.message.records};
+                } else {
+                    return {result: true, existence: false, message: "Not found third-party cookies"};
+                }
             } else {
-                return {result: false, message: "Not found TLD"};
+                return result;
             }
         } catch (err) {
             return {result: false, message: err.message};

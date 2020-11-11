@@ -1,4 +1,6 @@
 const BrowserCrawler = require('./browserCrawler');
+const neo4jSession = require('./neo4j-session');
+// CONSTANT
 const DEPTH = 1;
 
 (async function main() {
@@ -9,9 +11,9 @@ const DEPTH = 1;
         let depth = 0;
         let index = 0;
         // Init
-        browser.init("https://www.naver.com");
+        browser.init("https://www.naver.com/");
         // Process
-        console.log("[step 1] Extract links (LOOP)");
+        console.info("[step 1] Extract links (LOOP)");
         while(browser.getLinkCount() !== 0) {
             const link = browser.getLinkShift();
             // Break
@@ -25,34 +27,41 @@ const DEPTH = 1;
                 console.info(`[step 1.2] extract link`);
                 depth = await browser.extractLinks(link.depth);
 
-                console.info(`[step 1.3] finish extraction (cnt: ${index++})`);
+                console.info(`[step 1.3] finish extraction (index: ${index++} / tl: ${browser.getLinkCount()})`);
             } else {
                 console.error(`Response code: ${response} / URL: ${link.url.href}`);
             }
         }
-        // Console
-        console.log("[step 2] Finish get links (count: " + browser.getLinkCount() + ")");
+        console.info("[step 2] Finish get links (count: " + browser.getLinkCount() + ")");
 
         // Get cookie
         // Extract cookies and save data in file
         console.info("[step 3] get cookies");
-        for (const url of browser.getLinks()) {
-            console.info("[processing] move website (URL: " + url + ")");
-            await browser.movePage(url);
+        for (const link of browser.getLinks()) {
+            console.info("[processing] move website (URL: " + link.url.href + ")");
+            await browser.movePage(link.url.href);
             // Verify existence top level domain in graph database (neo4j)
-            let selectResult = await neo4jSession.findTopLevelDomain(url);
-            if (!selectResult.result) {
+            let selectResult = await neo4jSession.findTopLevelDomain(link.url.href);
+            if (selectResult.result) {
                 // Save tld node in graph database (neo4j)
-                await neo4jSession.insertTopLevelDomain(url);
+                if (!selectResult.existence) {
+                    await neo4jSession.insertTopLevelDomain(link.url.href);
+                }
+            } else {
+                console.error(selectResult.message);
             }
             // Verify existence sub level domain in graph database (neo4j)
-            selectResult = await neo4jSession.findSubLevelDomain(url);
-            if (!selectResult.result) {
+            selectResult = await neo4jSession.findSubLevelDomain(link.url.href);
+            if (selectResult.result) {
                 // Save tld node in graph database (neo4j)
-                await neo4jSession.insertSubLevelDomain(url);
+                if (!selectResult.existence) {
+                    await neo4jSession.insertSubLevelDomain(link.url.href);
+                }
+            } else {
+                console.error(selectResult.message);
             }
             // Create relation (top level domain - sub level domain)
-            await neo4jSession.insertRelationTLDAndSLD(url);
+            await neo4jSession.insertRelationTLDAndSLD(link.url.href);
 
             // Extract cookies
             console.info("[processing] get cookies (first party and third party)");
@@ -63,13 +72,17 @@ const DEPTH = 1;
             console.info("[processing] save data in graph database");
             for (const cookies of thirdCookies) {
                 selectResult = await neo4jSession.findThridParty(cookies);
-                if (!selectResult.result) {
+                if (selectResult.result) {
                     // Save tld node in graph database (neo4j)
-                    await neo4jSession.insertThirdParty(cookies);
+                    if (!selectResult.existence) {
+                        await neo4jSession.insertThirdParty(cookies);
+                    }
+                } else {
+                    console.error(selectResult.message);
                 }
 
                 // Create relation (sub level domain - third party)
-                await neo4jSession.insertRelationSLDAndTP(url, cookies);
+                await neo4jSession.insertRelationSLDAndTP(link.url.href, cookies);
                 // Create relation (third party cookies - publisher)
                 await neo4jSession.insertRelationPubliser(cookies);
             }

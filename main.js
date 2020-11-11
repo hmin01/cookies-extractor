@@ -22,7 +22,7 @@ async function createFile(urlString, type="first", data=[]) {
         console.info("[step 1] get sources");
         const sources = JSON.parse(fs.readFileSync(path.join(__dirname, "source.json")).toString());
         if (sources.length === 0) {
-            console.log("No source URL");
+            console.info("No source URL");
             return;
         }
         // Create browser and page (using puppeteer)
@@ -31,6 +31,7 @@ async function createFile(urlString, type="first", data=[]) {
         await browser.create();
         // Extract cookies and save data in file
         console.info("[step 3] get cookies");
+
         let index = 0;
         for (const url of sources) {
             console.info("[processing] move website (URL: " + url + ")");

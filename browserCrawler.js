@@ -13,6 +13,7 @@ class BrowserCrawler extends Browser {
         super();
 
         this.links = [];
+        this.urlList = {};   // for check duplication url
     }
 
     init (url) {
@@ -68,15 +69,16 @@ class BrowserCrawler extends Browser {
             return false;
         }
         // Exception .exe
-        if ((parser.pathname.indexOf('.exe') > -1) || (parser.pathname.indexOf('.dmg') > -1)) {
+        if (parser.pathname !== null && ((parser.pathname.indexOf('.exe') > -1) || (parser.pathname.indexOf('.dmg') > -1))) {
             return false;
         }
         // duplicate check
-        for (const elem of this.links) {
-            if (elem.url.hostname === parser.hostname && elem.url.pathname === parser.pathname && elem.url.query === parser.query) {
-                return false;
-            }
+        const temp = `${parser.hostname}${parser.pathname}`;
+        if (this.urlList[temp] !== undefined) {
+            return false;
         }
+        // Save url in url List
+        this.urlList[temp] = depth;
         // Save link
         this.links.push({
             depth: depth + 1,
