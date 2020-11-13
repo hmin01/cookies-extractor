@@ -93,7 +93,7 @@ class BrowserCrawler extends Browser {
         return true;
     }
 
-    async clearLinks() {
+    clearLinks() {
         this.links = [];
     }
 

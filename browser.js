@@ -44,7 +44,7 @@ class Browser {
         const parser = this.parseURL(url);
         try {
             if (parser !== null && parser.hash === null) {
-                const response = await this.page.goto(url, {waitUntil: 'networkidle0', timeout: 30000});
+                const response = await this.page.goto(url, {waitUntil: 'networkidle0', timeout: 10000});
                 return response._status;
             } else {
                 console.error(`this is inform url (URL: ${url})`);
@@ -81,36 +81,6 @@ class Browser {
     async extractThirdCookies() {
         // const cookies = await this.page.cookies();
         const host = url.parse(this.page.url()).host;
-
-        // // Extract first cookies domain
-        // const domains = [];
-        // for (const elem of cookies) {
-        //     if (!domains.includes(elem.domain)) {
-        //         domains.push(elem.domain);
-        //     }
-        // }
-        // // Get all cookies
-        // const allCookies = await this.extreactAllCookies();
-
-        // // Filter
-        // const thirdCookies = [];
-        // for (const elem of allCookies) {
-        //     if (!domains.includes(elem.domain)) {
-        //         let publisher = elem.domain;
-        //         if (elem.domain.replace(/^|S/)) {
-        //             publisher = psl.get(elem.domain.substring(1));
-        //         }
-
-        //         thirdCookies.push({
-        //             name: elem.name,
-        //             conn: host,
-        //             publisher: publisher,
-        //             value: elem.value
-        //         });
-        //     }
-        //     // Delete cookies in page
-        //     await this.page.deleteCookie(elem);
-        // }
 
         // Extract first cookies domain
         const tld = psl.get(host);
