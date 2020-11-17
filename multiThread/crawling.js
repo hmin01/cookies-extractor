@@ -13,7 +13,7 @@ let total = 0;
 
         let depth = 0, index = 0;
         // 초기화 (root url 설정)
-        browser.init("https://www.ruliweb.com/");
+        browser.init("https://www.naver.com/");
         // 웹 사이트에 존재하는 link 추출 (loop)
         console.info(`[Start] Extract links (Loop)\n`);
         while(browser.getLinkCount() !== 0) {

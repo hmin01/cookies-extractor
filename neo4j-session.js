@@ -49,7 +49,7 @@ module.exports = {
 
     insertThirdParty: async function(params) {
         try {
-            if ((data.name !== undefined && data.name !== null && data.name !== "") && (data.conn !== undefined && data.conn !== null && data.conn !== "") && (data.publisher !== undefined && data.publisher !== null && data.publisher !== "")) {
+            if ((params.name !== undefined && params.name !== null && params.name !== "") && (params.conn !== undefined && params.conn !== null && params.conn !== "") && (params.publisher !== undefined && params.publisher !== null && params.publisher !== "")) {
                 // Create query
                 const query = "CREATE (tp1: ThridPartyCookies {name: $name, conn: $conn, publisher: $publisher, value: $value})";
                 // Query and return
@@ -72,7 +72,7 @@ module.exports = {
                 tld: psl.get(url.parse(urlString).host)
             };
 
-            if ((data.domain !== undefined && data.domain !== null && data.domain !== "") && (data.tld !== undefined && data.tld !== null && data.tld !== "")) {
+            if ((params.domain !== undefined && params.domain !== null && params.domain !== "") && (params.tld !== undefined && params.tld !== null && params.tld !== "")) {
                 // Query
                 const result = await select(driver, selectQuery, params);
                 // Verify existence
@@ -107,7 +107,7 @@ module.exports = {
                 publisher: data.publisher
             }
 
-            if ((data.name !== undefined && data.name !== null && data.name !== "") && (data.conn !== undefined && data.conn !== null && data.conn !== "") && (data.publisher !== undefined && data.publisher !== null && data.publisher !== "")) {
+            if ((params.name !== undefined && params.name !== null && params.name !== "") && (params.conn !== undefined && params.conn !== null && params.conn !== "") && (params.publisher !== undefined && params.publisher !== null && params.publisher !== "")) {
                 // Query
                 const result = await select(driver, selectQuery, params);
                 // Verify existence
@@ -144,7 +144,7 @@ module.exports = {
                 publisher: data.publisher
             }
 
-            if ((data.name !== undefined && data.name !== null && data.name !== "") && (data.conn !== undefined && data.conn !== null && data.conn !== "") && (data.publisher !== undefined && data.publisher !== null && data.publisher !== "")) {
+            if ((params.name !== undefined && params.name !== null && params.name !== "") && (params.conn !== undefined && params.conn !== null && params.conn !== "") && (params.publisher !== undefined && params.publisher !== null && params.publisher !== "")) {
                 // Query
                 const result = await select(driver, selectQuery, params);
                 // Verify existence
