@@ -14,8 +14,13 @@ module.exports = {
             const params = {
                 tld: isParse ? psl.get(url.parse(urlString).host) : urlString
             };
-            // Query and return
-            return await insert(driver, query, params);
+            
+            if (params.tld !== undefined && params.tld !== null && params.tld !== "") {
+                // Query and return
+                return await insert(driver, query, params);
+            } else {
+                return {result: false, message: "Invaild data"};
+            }
         } catch (err) {
             return {result: false, message: err.message};
         }
@@ -30,8 +35,13 @@ module.exports = {
                 domain: url.parse(urlString).host,
                 tld: psl.get(url.parse(urlString).host)
             };
-            // Query and return
-            return await insert(driver, query, params);
+
+            if ((params.domain !== undefined && params.domain !== null && params.domain !== "") && (params.tld !== undefined && params.tld !== null && params.tld !== "")) {
+                // Query and return
+                return await insert(driver, query, params);
+            } else {
+                return {result: false, message: "Invaild data"};
+            }
         } catch (err) {
             return {result: false, message: err.message};
         }
@@ -39,10 +49,14 @@ module.exports = {
 
     insertThirdParty: async function(params) {
         try {
-            // Create query
-            const query = "CREATE (tp1: ThridPartyCookies {name: $name, conn: $conn, publisher: $publisher, value: $value})";
-            // Query and return
-            return await insert(driver, query, params);
+            if ((data.name !== undefined && data.name !== null && data.name !== "") && (data.conn !== undefined && data.conn !== null && data.conn !== "") && (data.publisher !== undefined && data.publisher !== null && data.publisher !== "")) {
+                // Create query
+                const query = "CREATE (tp1: ThridPartyCookies {name: $name, conn: $conn, publisher: $publisher, value: $value})";
+                // Query and return
+                return await insert(driver, query, params);
+            } else {
+                return {result: false, message: "Invaild data"};
+            }
         } catch (err) {
             return {result: false, message: err.message};
         }
@@ -57,20 +71,25 @@ module.exports = {
                 domain: url.parse(urlString).host,
                 tld: psl.get(url.parse(urlString).host)
             };
-            // Query
-            const result = await select(driver, selectQuery, params);
-            // Verify existence
-            if (result.result) {
-                if (result.message.records.length === 0) {
-                    // Create query
-                    const query = "Match (tld1 {tld: $tld}), (sld1 {domain: $domain, parent: $tld}) CREATE (sld1) - [r1: RootDomain]->(tld1)";
-                    // Query and return
-                    return await insert(driver, query, params);
+
+            if ((data.domain !== undefined && data.domain !== null && data.domain !== "") && (data.tld !== undefined && data.tld !== null && data.tld !== "")) {
+                // Query
+                const result = await select(driver, selectQuery, params);
+                // Verify existence
+                if (result.result) {
+                    if (result.message.records.length === 0) {
+                        // Create query
+                        const query = "Match (tld1 {tld: $tld}), (sld1 {domain: $domain, parent: $tld}) CREATE (sld1) - [r1: RootDomain]->(tld1)";
+                        // Query and return
+                        return await insert(driver, query, params);
+                    } else {
+                        return {result: true};
+                    }
                 } else {
-                    return {result: true};
+                    return result;
                 }
             } else {
-                return result;
+                return {result: false, message: "Invaild data"};
             }
         } catch (err) {
             return {result: false, message: err.message};
@@ -87,22 +106,27 @@ module.exports = {
                 conn: data.conn,
                 publisher: data.publisher
             }
-            // Query
-            const result = await select(driver, selectQuery, params);
-            // Verify existence
-            if (result.result) {
-                if (result.message.records.length === 0) {
-                    // Create insert query
-                    const insertQuery = "Match (sld1 {domain: $conn, parent: $parent}), (tp1 {name: $name, conn: $conn, publisher: $publisher}) CREATE (tp1) - [r2: Contain]->(sld1)";
-                    // Add param property
-                    params.parent = psl.get(url.parse(urlString).host);
-                    // Query and return
-                    return await insert(driver, insertQuery, params);
+
+            if ((data.name !== undefined && data.name !== null && data.name !== "") && (data.conn !== undefined && data.conn !== null && data.conn !== "") && (data.publisher !== undefined && data.publisher !== null && data.publisher !== "")) {
+                // Query
+                const result = await select(driver, selectQuery, params);
+                // Verify existence
+                if (result.result) {
+                    if (result.message.records.length === 0) {
+                        // Create insert query
+                        const insertQuery = "Match (sld1 {domain: $conn, parent: $parent}), (tp1 {name: $name, conn: $conn, publisher: $publisher}) CREATE (tp1) - [r2: Contain]->(sld1)";
+                        // Add param property
+                        params.parent = psl.get(url.parse(urlString).host);
+                        // Query and return
+                        return await insert(driver, insertQuery, params);
+                    } else {
+                        return {result: true};
+                    }
                 } else {
-                    return {result: true};
+                    return result;
                 }
             } else {
-                return result;
+                return {result: false, message: "Invaild data"};
             }
         } catch (err) {
             return {result: false, message: err.message};
@@ -119,33 +143,38 @@ module.exports = {
                 conn: data.conn,
                 publisher: data.publisher
             }
-            // Query
-            const result = await select(driver, selectQuery, params);
-            // Verify existence
-            if (result.result) {
-                if (result.message.records.length === 0) {
-                    // Verify existence
-                    const selectResult = await this.findTopLevelDomain(params.publisher, false);
-                    if (selectResult.result) {
-                        if (!selectResult.existence) {
-                            const result = await this.insertTopLevelDomain(params.publisher, false);
-                            if (!result.result) {
-                                console.error(result.message);
-                            }
-                        }
 
-                        // Create insert query
-                        insertQuery = "Match (tld1 {tld: $publisher}), (tp1 {name: $name, conn: $conn, publisher: $publisher}) CREATE (tld1) - [r3: Publish]->(tp1)";
-                        // Query and return
-                        return await insert(driver, insertQuery, params);
+            if ((data.name !== undefined && data.name !== null && data.name !== "") && (data.conn !== undefined && data.conn !== null && data.conn !== "") && (data.publisher !== undefined && data.publisher !== null && data.publisher !== "")) {
+                // Query
+                const result = await select(driver, selectQuery, params);
+                // Verify existence
+                if (result.result) {
+                    if (result.message.records.length === 0) {
+                        // Verify existence
+                        const selectResult = await this.findTopLevelDomain(params.publisher, false);
+                        if (selectResult.result) {
+                            if (!selectResult.existence) {
+                                const result = await this.insertTopLevelDomain(params.publisher, false);
+                                if (!result.result) {
+                                    console.error(result.message);
+                                }
+                            }
+
+                            // Create insert query
+                            insertQuery = "Match (tld1 {tld: $publisher}), (tp1 {name: $name, conn: $conn, publisher: $publisher}) CREATE (tld1) - [r3: Publish]->(tp1)";
+                            // Query and return
+                            return await insert(driver, insertQuery, params);
+                        } else {
+                            console.error(selectResult);
+                        }
                     } else {
-                        console.error(selectResult);
+                        return {result: true};
                     }
                 } else {
-                    return {result: true};
+                    return result;
                 }
             } else {
-                return result;
+                return {result: false, message: "Invaild data"};
             }
         } catch (err) {
             return {result: false, message: err.message};

@@ -44,7 +44,7 @@ class Browser {
         const parser = this.parseURL(url);
         try {
             if (parser !== null && parser.hash === null) {
-                const response = await this.page.goto(url, {waitUntil: 'networkidle0', timeout: 10000});
+                const response = await this.page.goto(url, {waitUntil: 'networkidle2', timeout: 10000});
                 return response._status;
             } else {
                 console.error(`this is inform url (URL: ${url})`);
