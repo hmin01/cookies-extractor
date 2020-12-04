@@ -78,9 +78,9 @@ class Browser {
         return (await this.page._client.send('Network.getAllCookies')).cookies;
     }
 
-    async extractThirdCookies() {
+    async extractThirdCookies(urlString) {
         // const cookies = await this.page.cookies();
-        const host = url.parse(this.page.url()).host;
+        const host = url.parse(urlString).host;
 
         // Extract first cookies domain
         const tld = psl.get(host);

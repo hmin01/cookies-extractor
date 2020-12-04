@@ -1,3 +1,4 @@
+const { session } = require('neo4j-driver');
 const BrowserCrawler = require('../browserCrawler');
 const neo4jSession = require('../neo4j-session');
 
@@ -21,7 +22,7 @@ process.on('message', async (message) => {
         // Verify existence sub level domain in graph database (neo4j)
         selectResult = await neo4jSession.findSubLevelDomain(message);
         if (selectResult.result) {
-            // Save tld node in graph database (neo4j)
+            // Save sld node in graph database (neo4j)
             if (!selectResult.existence) {
                 await neo4jSession.insertSubLevelDomain(message);
             }
@@ -34,7 +35,7 @@ process.on('message', async (message) => {
         // Extract cookies
         // console.info("[Processing] get cookies (first party and third party)");
         // const firstCookies = await browser.extractFirstCookies();
-        const thirdCookies = await browser.extractThirdCookies();
+        const thirdCookies = await browser.extractThirdCookies(message);
 
         // Verify existence third-party cookies in graph database (neo4j)
         // console.info("[Processing] save data in graph database");
@@ -57,9 +58,16 @@ process.on('message', async (message) => {
 
         console.info(`@@ Extracted cookies (URL: ${message})`);
         neo4jSession.close();
+
+        await browser.close();
+        delete browser;
         process.exit(0);
     } else {
         console.error(`[Processing Error] Response code: ${response} / URL: ${message}`);
+        neo4jSession.close();
+        
+        await browser.close();
+        delete browser;
         process.exit(1);
     }
 });

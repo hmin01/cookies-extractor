@@ -1,7 +1,7 @@
 const url = require('url');
 const psl = require('psl');
 const neo4j = require('neo4j-driver');
-const driver = neo4j.driver('neo4j://localhost', neo4j.auth.basic("neo4j", "qlalfqjsgh"));
+const driver = neo4j.driver('neo4j://143.248.94.64', neo4j.auth.basic("neo4j", "qlalfqjsgh"));
 // Option
 const DATABASE = "neo4j";
 
@@ -256,6 +256,45 @@ module.exports = {
         }
     },
 
+    findThridPartyCountByTLD: async function() {
+        try {
+            const arr = [];
+            // Select TLD
+            const query = "MATCH (tp: TopLevelDomain) RETURN tp.tld";
+            const selectResult = await select(driver, query);
+            if (selectResult.result) {
+                if (selectResult.message.records.length > 0) {
+                    for (const elem of selectResult.message.records) {
+                        const query = `MATCH (ori_t:TopLevelDomain {tld: $tld})<-[r1:RootDomain]-(s1:SubLevelDomain) WITH ori_t, s1 MATCH (tp:ThridPartyCookies)-[r3:Contain]->(s1) RETURN COUNT(tp)`;
+                        const params = {
+                            tld: elem._fields[0]
+                        };
+                        const result = await select(driver, query, params);
+                        if (result.result) {
+                            if (result.message.records.length > 0) {
+                                arr.push({
+                                    domain: elem._fields[0],
+                                    tpCount: result.message.records[0]._fields[0].low
+                                });
+                            } else {
+                                return {result: false, message: "Select error"};
+                            }
+                        } else {
+                            return result;
+                        }
+                    }
+
+                    return {result: true, message: arr};
+                } else {
+                    return {result: false, message: "Not found TLDs"};
+                }
+            } else {
+                return selectResult;
+            }
+        } catch (err) {
+            return {result: false, message: err.message};
+        }
+    },
     close: async function() {
         try {
             await driver.close();
