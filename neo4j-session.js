@@ -295,6 +295,34 @@ module.exports = {
             return {result: false, message: err.message};
         }
     },
+
+    findThridPartyByTLD: async function(tld) {
+        try {
+            const arr = [];
+            // Select TLD
+            const query = `MATCH (tld:TopLevelDomain {tld: $tld})<-[r1:RootDomain]-(s1:SubLevelDomain) WITH tld, s1 MATCH (tp1:ThridPartyCookies)-[r2:Contain]->(s1) WITH tld, tp1 MATCH (tld)-[r3:Publish]->(tp2: ThirdpartyCookies) RETURN tp1, tp2`;
+            const params = {
+                tld: tld
+            };
+            const result = await select(driver, query, params);
+            if (result.result) {
+                if (result.message.records.length > 0) {
+                    for (const elem of result.message.records) {
+                        console.log(elem._fields);
+                        // console.log(tld === elem._fields);
+                        // arr.push(elem._fields);
+                    }
+                } else {
+                    return {result: false, message: "Select error"};
+                }
+            } else {
+                return result;
+            }
+        } catch (err) {
+            return {result: false, message: err.message};
+        }
+    },
+
     close: async function() {
         try {
             await driver.close();
